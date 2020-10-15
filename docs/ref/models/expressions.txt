@@ -484,7 +484,15 @@ The ``output_field`` argument should be a model field instance, like
 after it's retrieved from the database. Usually no arguments are needed when
 instantiating the model field as any arguments relating to data validation
 (``max_length``, ``max_digits``, etc.) will not be enforced on the expression's
-output value.
+output value. If no ``output_field`` is specified it will be tentatively
+inferred from the :py:class:`type` of the provided ``value``, if possible. For
+example, passing an instance of :py:class:`datetime.datetime` as ``value``
+would default ``output_field`` to :class:`~django.db.models.DateTimeField`.
+
+.. versionchanged:: 3.2
+
+  Support for inferring a default ``output_field`` from the type of ``value``
+  was added.
 
 ``ExpressionWrapper()`` expressions
 -----------------------------------
@@ -640,13 +648,6 @@ directly filter a queryset::
 
 This will ensure that the subquery will not be added to the ``SELECT`` columns,
 which may result in a better performance.
-
-.. versionchanged:: 3.0
-
-    In previous versions of Django, it was necessary to first annotate and then
-    filter against the annotation. This resulted in the annotated value always
-    being present in the query result, and often resulted in a query that took
-    more time to execute.
 
 Using aggregates within a ``Subquery`` expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -994,10 +995,6 @@ calling the appropriate methods on the wrapped expression.
         nested expressions. ``F()`` objects, in particular, hold a reference
         to a column. The ``alias`` parameter will be ``None`` unless the
         expression has been annotated and is used for grouping.
-
-        .. versionchanged:: 3.0
-
-            The ``alias`` parameter was added.
 
     .. method:: asc(nulls_first=False, nulls_last=False)
 
